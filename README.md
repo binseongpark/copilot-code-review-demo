@@ -12,6 +12,8 @@
 
 ### 1. 코드 수정 해보기: 커밋 전 리뷰
 
+> 🌿 브랜치: `feature/increment-step`
+
 ```ts
 // src/lib/counter.ts
 export function increment(n: number): number {
@@ -56,6 +58,8 @@ describe("increment", () => {
 
 ### 2. 수동 리뷰
 
+> 🌿 브랜치: `feature/increment-step` (§1 변경을 그대로 커밋 → PR)
+
 1. PR 생성 → Reviewers에서 `Copilot` 선택
 2. 인라인 코멘트 확인
    - **Commit suggestion**: 제안 코드 바로 커밋
@@ -68,6 +72,8 @@ describe("increment", () => {
 
 ### 3. 자동 리뷰
 
+> 🌿 브랜치: `chore/text-change` (Ruleset 켠 뒤 새 PR)
+
 - `Settings → Rules → Rulesets` → ✅ **Automatically request Copilot code review**
   - **Review new pushes**: 새 커밋마다 자동 재리뷰
 - PR을 만들면 Copilot이 리뷰어로 자동 지정
@@ -78,6 +84,8 @@ describe("increment", () => {
 <!-- 📸 캡처: PR 타임라인 "Copilot started reviewing on behalf of ..." -->
 
 ### 4. 팀 기준 주입: `copilot-instructions.md`
+
+> 🌿 브랜치: `chore/copilot-instructions`
 
 ```markdown
 <!-- .github/copilot-instructions.md -->
@@ -133,6 +141,8 @@ PR open / push
 
 ### 2. CI + Required status checks
 
+> 🌿 브랜치: `test/break-counter` (테스트 깨뜨려서 머지 차단 확인)
+
 ```yaml
 # .github/workflows/ci.yml
 name: CI
@@ -160,6 +170,8 @@ jobs:
 <!-- 📸 캡처: test 실패 → 머지 버튼 비활성화 -->
 
 ### 3. AI를 게이트로: Actions + Copilot CLI (`actions/ai-inference@v3`)
+
+> 🌿 브랜치: `ci/ai-review-gate` (워크플로 추가, PASS 확인) → `feature/greeting` (XSS, BLOCK 확인)
 
 - 사전 준비: Fine-grained PAT(**Copilot Requests** 권한) → 레포 Secret `COPILOT_PAT`
 - 비용은 **PAT 주인의 Copilot 크레딧**
@@ -253,6 +265,8 @@ http://localhost:5173/?name=<img src=x onerror="alert('XSS!')">
 <!-- 📸 캡처: Actions 로그의 BLOCK 판정과 한국어 설명 -->
 
 ### 4. 실패 대응 자동화: 에이전트가 고친다
+
+> 🌿 브랜치: `feature/greeting` (BLOCK된 PR을 그대로 수정)
 
 - **Fix with Copilot**: 코멘트에서 버튼 한 번 → 에이전트가 수정 커밋
 - **Agent merge** (Copilot 앱): 리뷰 반영 / CI 수정 / 충돌 해결을 반복
