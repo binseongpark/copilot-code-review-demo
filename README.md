@@ -139,6 +139,9 @@ describe("increment", () => {
 | `AGENTS.md`                              | 여러 AI 도구 공통                                |
 | `REVIEW.md`                              | 웹 코드 리뷰 전용                                |
 
+![](docs/images/2_2_4_01.png)
+![](docs/images/2_2_4_02.png)
+
 <!-- 📸 캡처: 지침 추가 전/후 리뷰 코멘트 비교 ([High]/[Low] 태그 유무) -->
 
 ### 5. Copilot 리뷰 = 조언
