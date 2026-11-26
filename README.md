@@ -45,13 +45,26 @@ describe("increment", () => {
          >
 ```
 
-- `n + 1` → `n + 2`로 수정 (커밋 전)
+- 커밋 전에 일부러 버그 심기
+
+```diff
+// src/lib/counter.ts
+ export function increment(n: number): number {
+-  return n + 1;
++  return n + 2;
+ }
+```
+
+![](docs/images/2_2_1_01.png)
 
 <!-- 📸 캡처: counter.ts를 n + 2로 수정한 diff -->
 
 - Source Control → **변경 사항** 옆 리뷰 버튼 → 에디터에 인라인 코멘트
 - ✨ 버튼으로 커밋 메시지 자동 생성
 - 리뷰는 PR보다 **먼저, IDE에서** 시작할 수 있음
+
+![](docs/images/2_2_1_02.png)
+![](docs/images/2_2_1_03.png)
 
 <!-- 📸 캡처: Source Control 패널의 Code Review 버튼 (말풍선 <> 아이콘) -->
 <!-- 📸 캡처: 에디터 인라인 코멘트 "Comment 1 of N" 화면 -->
@@ -66,6 +79,11 @@ describe("increment", () => {
    - **Fix with Copilot**: 에이전트가 수정 커밋
 3. 수정 후 **Re-request review**
 
+![](docs/images/2_2_2_01.png)
+![](docs/images/2_2_2_02.png)
+![](docs/images/2_2_2_03.png)
+![](docs/images/2_2_2_04.png)
+
 <!-- 📸 캡처: Reviewers에서 Copilot 선택 -->
 <!-- 📸 캡처: PR 개요 코멘트 (판정 + 요약) -->
 <!-- 📸 캡처: 인라인 코멘트 + Suggested change -->
@@ -74,11 +92,28 @@ describe("increment", () => {
 
 > 🌿 브랜치: `chore/text-change` (Ruleset 켠 뒤 새 PR)
 
-- `Settings → Rules → Rulesets` → ✅ **Automatically request Copilot code review**
-  - **Review new pushes**: 새 커밋마다 자동 재리뷰
+**Branch ruleset 만들기**
+
+1. 레포 `Settings → Rules → Rulesets` → **New ruleset** → **New branch ruleset**
+2. **Ruleset Name**: `main-protection` (자유)
+3. **Enforcement status**: `Disabled` → **`Active`** 로 변경
+4. **Target branches** → **Add target** → **Include default branch** (= `main`)
+5. **Branch rules**
+   - ✅ **Require a pull request before merging**: main 직접 push 금지, PR 필수
+     - **Required approvals: `0`** (혼자 시연 → 본인 PR은 본인 승인 불가라 1 이상이면 머지 막힘)
+   - ✅ **Automatically request Copilot code review**
+     - ✅ **Review new pushes**: 새 커밋마다 자동 재리뷰
+     - ⬜ Review draft pull requests: Draft PR도 리뷰 (선택)
+   - 기본 체크된 **Restrict deletions / Block force pushes**는 그대로 둬도 됨
+     - 단, 강의 후 `git reset --hard baseline` + force push 하려면 **Block force pushes 해제** 필요
+6. 맨 아래 **Create** 클릭
+
 - PR을 만들면 Copilot이 리뷰어로 자동 지정
 - 자동 리뷰도 **PR 작성자 명의**로 실행 (비용도 작성자)
 - Free 플랜은 **Public 레포**에서만 Ruleset 사용 가능
+
+![](docs/images/2_2_3_01.png)
+![](docs/images/2_2_3_02.png)
 
 <!-- 📸 캡처: Ruleset의 Copilot code review 체크박스 -->
 <!-- 📸 캡처: PR 타임라인 "Copilot started reviewing on behalf of ..." -->
@@ -103,6 +138,9 @@ describe("increment", () => {
 | `.github/instructions/*.instructions.md` | 경로별 규칙 (`applyTo`)                          |
 | `AGENTS.md`                              | 여러 AI 도구 공통                                |
 | `REVIEW.md`                              | 웹 코드 리뷰 전용                                |
+
+![](docs/images/2_2_4_01.png)
+![](docs/images/2_2_4_02.png)
 
 <!-- 📸 캡처: 지침 추가 전/후 리뷰 코멘트 비교 ([High]/[Low] 태그 유무) -->
 
@@ -137,11 +175,15 @@ PR open / push
   Fix with Copilot / Agent merge → 수정 커밋 → 다시 파이프라인
 ```
 
+![](docs/images/2_3_1_01.png)
+
 - 머지를 막는 건 **리뷰가 아니라 체크(status)**
 
 ### 2. CI + Required status checks
 
-> 🌿 브랜치: `test/break-counter` (테스트 깨뜨려서 머지 차단 확인)
+> 🌿 브랜치: `ci/add-ci` (ci.yml 추가 → 머지) → `test/break-counter` (테스트 깨뜨려서 머지 차단 확인)
+
+**① CI 워크플로 추가** (`ci/add-ci` → PR → `test` 통과 → 머지)
 
 ```yaml
 # .github/workflows/ci.yml
@@ -163,8 +205,27 @@ jobs:
       - run: npm test
 ```
 
-- Ruleset → ✅ **Require status checks to pass** → `test` 추가
+**② Ruleset에 필수 체크 등록**
+
+- Ruleset → ✅ **Require status checks to pass** → **Add checks** → `test` 입력 후 선택
+  - 하위 옵션(Require branches to be up to date / Do not require on creation)은 체크 안 함
 - 체크 이름 = **job 이름**, 한 번 실행된 체크만 검색됨
+
+**③ 테스트 깨뜨리기** (`test/break-counter` → PR)
+
+```diff
+// src/lib/counter.ts
+ export function increment(n: number): number {
+-  return n + 1;
++  return n + 2;
+ }
+```
+
+- PR 열면 `test` 실행 → `expect(increment(0)).toBe(1)` 실패
+- ❌ `test` → **머지 버튼 비활성화**
+
+![](docs/images/2_3_1_02.png)
+![](docs/images/2_3_1_03.png)
 
 <!-- 📸 캡처: Ruleset Add checks에 test, ai-review 추가된 화면 -->
 <!-- 📸 캡처: test 실패 → 머지 버튼 비활성화 -->
@@ -200,10 +261,10 @@ jobs:
       - name: Build prompt
         run: |
           {
-            echo "Review the following git diff."
-            echo "If it contains hardcoded secrets or obvious security issues,"
-            echo "the FIRST line must be exactly BLOCK. Otherwise exactly PASS."
-            echo "Then explain briefly in Korean."
+            echo "다음 git diff를 리뷰해줘."
+            echo "하드코딩된 시크릿이나 XSS 같은 명백한 보안 문제가 있으면"
+            echo "먼저 이유를 한국어로 짧게 설명한 뒤,"
+            echo "마지막 줄에는 정확히 BLOCK 또는 PASS 한 단어만 써."
             echo
             git diff origin/${{ github.base_ref }}...HEAD
           } > prompt.txt
@@ -223,16 +284,22 @@ jobs:
           RESULT: ${{ steps.ai.outputs.response }}
         run: |
           echo "$RESULT"
-          if [[ "${RESULT%%$'\n'*}" != "PASS" ]]; then
+          LAST="$(printf '%s\n' "$RESULT" | grep -v '^[[:space:]]*$' | tail -n1)"
+          if [[ "$LAST" != "PASS" ]]; then
             echo "::error::AI review blocked this PR"
             exit 1
           fi
 ```
 
-- 첫 줄이 정확히 **PASS일 때만 통과** (fail-closed)
+- 마지막 줄이 정확히 **PASS일 때만 통과** (fail-closed)
+- 왜 마지막 줄? 모델은 앞에서부터 생성 → 판정을 먼저 쓰게 하면 **생각하기 전에 결론**
+  - 실제 사례: 첫 줄 `BLOCK` → 설명하다가 "정정: PASS" → Gate는 첫 줄만 봐서 실패
+
 - `ai-review`도 Required status checks에 등록
 
 **BLOCK 예제: 겉보기엔 멀쩡한 XSS**
+
+> 🌿 브랜치: `feature/greeting` (`ci/ai-review-gate` 머지 후 main에서 새로 생성)
 
 ```tsx
 // src/components/Greeting.tsx
@@ -260,6 +327,11 @@ http://localhost:5173/?name=<img src=x onerror="alert('XSS!')">
 - lint·test는 통과 → AI 게이트가 BLOCK
 - 수정: `<h1>안녕하세요, {name}님</h1>` (React가 자동 이스케이프)
 
+![](docs/images/2_3_3_01.png)
+![](docs/images/2_3_3_02.png)
+![](docs/images/2_3_3_03.png)
+![](docs/images/2_3_3_04.png)
+
 <!-- 📸 캡처: 브라우저에 alert('XSS!') 창이 뜬 화면 -->
 <!-- 📸 캡처: test ✅ / ai-review ❌ + 머지 차단 -->
 <!-- 📸 캡처: Actions 로그의 BLOCK 판정과 한국어 설명 -->
@@ -270,11 +342,18 @@ http://localhost:5173/?name=<img src=x onerror="alert('XSS!')">
 
 - **Fix with Copilot**: 코멘트에서 버튼 한 번 → 에이전트가 수정 커밋
 - **Agent merge** (Copilot 앱): 리뷰 반영 / CI 수정 / 충돌 해결을 반복
-  - **Merge pull request**는 기본 꺼짐 — 켜야 머지까지 수행
+  - 위치: PR 세션 → **Ready to merge ▾** 드롭다운 → **Agent merge** 토글
+  - Allow the agent to: Address reviews ✅ · Fix CI failures ✅ · Resolve conflicts ✅ · **Merge pull request ☐**
+  - **머지는 기본 해제(opt-in)** — 체크해야 머지까지 수행
+  - 켜도 ruleset(required checks·승인 조건)은 **우회 못 함** → 게이트 통과해야 머지
 - 수정 커밋 → 자동 재리뷰 → CI 재실행 → 통과 시 머지
 
+![](docs/images/2_3_4_01.png)
+![](docs/images/2_3_4_02.png)
+![](docs/images/2_3_4_03.png)
+
 <!-- 📸 캡처: Fix with Copilot 버튼 -->
-<!-- 📸 캡처: Agent merge 옵션 창 -->
+<!-- 📸 캡처: Agent merge 옵션 창 (Ready to merge ▾ 드롭다운, Merge pull request 해제 상태) -->
 <!-- 📸 캡처: 수정 후 체크 전부 ✅ -->
 
 ### 5. 어디까지 맡길까
