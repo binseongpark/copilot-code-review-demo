@@ -1,4 +1,4 @@
 export function increment(n: number): number {
   console.log("hello");
-  return n + 1;
+  return n + 2;
 }
