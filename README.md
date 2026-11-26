@@ -45,7 +45,15 @@ describe("increment", () => {
          >
 ```
 
-- `n + 1` → `n + 2`로 수정 (커밋 전)
+- 커밋 전에 일부러 버그 심기
+
+```diff
+// src/lib/counter.ts
+ export function increment(n: number): number {
+-  return n + 1;
++  return n + 2;
+ }
+```
 
 <!-- 📸 캡처: counter.ts를 n + 2로 수정한 diff -->
 
@@ -81,6 +89,8 @@ describe("increment", () => {
 3. **Enforcement status**: `Disabled` → **`Active`** 로 변경
 4. **Target branches** → **Add target** → **Include default branch** (= `main`)
 5. **Branch rules**
+   - ✅ **Require a pull request before merging**: main 직접 push 금지, PR 필수
+     - **Required approvals: `0`** (혼자 시연 → 본인 PR은 본인 승인 불가라 1 이상이면 머지 막힘)
    - ✅ **Automatically request Copilot code review**
      - ✅ **Review new pushes**: 새 커밋마다 자동 재리뷰
      - ⬜ Review draft pull requests: Draft PR도 리뷰 (선택)
@@ -153,7 +163,9 @@ PR open / push
 
 ### 2. CI + Required status checks
 
-> 🌿 브랜치: `test/break-counter` (테스트 깨뜨려서 머지 차단 확인)
+> 🌿 브랜치: `ci/add-ci` (ci.yml 추가 → 머지) → `test/break-counter` (테스트 깨뜨려서 머지 차단 확인)
+
+**① CI 워크플로 추가** (`ci/add-ci` → PR → `test` 통과 → 머지)
 
 ```yaml
 # .github/workflows/ci.yml
@@ -175,8 +187,24 @@ jobs:
       - run: npm test
 ```
 
-- Ruleset → ✅ **Require status checks to pass** → `test` 추가
+**② Ruleset에 필수 체크 등록**
+
+- Ruleset → ✅ **Require status checks to pass** → **Add checks** → `test` 입력 후 선택
+  - 하위 옵션(Require branches to be up to date / Do not require on creation)은 체크 안 함
 - 체크 이름 = **job 이름**, 한 번 실행된 체크만 검색됨
+
+**③ 테스트 깨뜨리기** (`test/break-counter` → PR)
+
+```diff
+// src/lib/counter.ts
+ export function increment(n: number): number {
+-  return n + 1;
++  return n + 2;
+ }
+```
+
+- PR 열면 `test` 실행 → `expect(increment(0)).toBe(1)` 실패
+- ❌ `test` → **머지 버튼 비활성화**
 
 <!-- 📸 캡처: Ruleset Add checks에 test, ai-review 추가된 화면 -->
 <!-- 📸 캡처: test 실패 → 머지 버튼 비활성화 -->
@@ -212,10 +240,10 @@ jobs:
       - name: Build prompt
         run: |
           {
-            echo "Review the following git diff."
-            echo "If it contains hardcoded secrets or obvious security issues,"
-            echo "the FIRST line must be exactly BLOCK. Otherwise exactly PASS."
-            echo "Then explain briefly in Korean."
+            echo "다음 git diff를 리뷰해줘."
+            echo "하드코딩된 시크릿이나 XSS 같은 명백한 보안 문제가 있으면"
+            echo "첫 줄은 정확히 BLOCK, 아니면 정확히 PASS 로만 써."
+            echo "그 다음 줄부터 이유를 한국어로 짧게 설명해."
             echo
             git diff origin/${{ github.base_ref }}...HEAD
           } > prompt.txt
@@ -245,6 +273,8 @@ jobs:
 - `ai-review`도 Required status checks에 등록
 
 **BLOCK 예제: 겉보기엔 멀쩡한 XSS**
+
+> 🌿 브랜치: `feature/greeting` (`ci/ai-review-gate` 머지 후 main에서 새로 생성)
 
 ```tsx
 // src/components/Greeting.tsx
