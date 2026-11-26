@@ -1,0 +1,50 @@
+name: AI Review Gate
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install -g @github/copilot
+
+      - name: Build prompt
+        run: |
+          {
+            echo "다음 git diff를 리뷰해줘."
+            echo "하드코딩된 시크릿이나 XSS 같은 명백한 보안 문제가 있으면"
+            echo "먼저 이유를 한국어로 짧게 설명한 뒤,"
+            echo "마지막 줄에는 정확히 BLOCK 또는 PASS 한 단어만 써."
+            echo
+            git diff origin/${{ github.base_ref }}...HEAD
+          } > prompt.txt
+
+      - name: AI review
+        id: ai
+        uses: actions/ai-inference@v3
+        with:
+          model: ""
+          prompt-file: prompt.txt
+          system-prompt: You are a strict security code reviewer.
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
+
+      - name: Gate
+        env:
+          RESULT: ${{ steps.ai.outputs.response }}
+        run: |
+          echo "$RESULT"
+          LAST="$(printf '%s\n' "$RESULT" | grep -v '^[[:space:]]*$' | tail -n1)"
+          if [[ "$LAST" != "PASS" ]]; then
+            echo "::error::AI review blocked this PR"
+            exit 1
+          fi
