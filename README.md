@@ -112,6 +112,8 @@ describe("increment", () => {
 - 자동 리뷰도 **PR 작성자 명의**로 실행 (비용도 작성자)
 - Free 플랜은 **Public 레포**에서만 Ruleset 사용 가능
 
+![](docs/images/2_2_3_01.png)
+
 <!-- 📸 캡처: Ruleset의 Copilot code review 체크박스 -->
 <!-- 📸 캡처: PR 타임라인 "Copilot started reviewing on behalf of ..." -->
 
