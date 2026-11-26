@@ -242,8 +242,8 @@ jobs:
           {
             echo "다음 git diff를 리뷰해줘."
             echo "하드코딩된 시크릿이나 XSS 같은 명백한 보안 문제가 있으면"
-            echo "첫 줄은 정확히 BLOCK, 아니면 정확히 PASS 로만 써."
-            echo "그 다음 줄부터 이유를 한국어로 짧게 설명해."
+            echo "먼저 이유를 한국어로 짧게 설명한 뒤,"
+            echo "마지막 줄에는 정확히 BLOCK 또는 PASS 한 단어만 써."
             echo
             git diff origin/${{ github.base_ref }}...HEAD
           } > prompt.txt
@@ -263,13 +263,19 @@ jobs:
           RESULT: ${{ steps.ai.outputs.response }}
         run: |
           echo "$RESULT"
-          if [[ "${RESULT%%$'\n'*}" != "PASS" ]]; then
+          LAST="$(printf '%s\n' "$RESULT" | grep -v '^[[:space:]]*$' | tail -n1)"
+          if [[ "$LAST" != "PASS" ]]; then
             echo "::error::AI review blocked this PR"
             exit 1
           fi
 ```
 
-- 첫 줄이 정확히 **PASS일 때만 통과** (fail-closed)
+- 마지막 줄이 정확히 **PASS일 때만 통과** (fail-closed)
+- 왜 마지막 줄? 모델은 앞에서부터 생성 → 판정을 먼저 쓰게 하면 **생각하기 전에 결론**
+  - 실제 사례: 첫 줄 `BLOCK` → 설명하다가 "정정: PASS" → Gate는 첫 줄만 봐서 실패
+
+<!-- 📸 캡처: 첫 줄 BLOCK 후 "최종 판정: PASS"로 번복한 Gate 로그 -->
+
 - `ai-review`도 Required status checks에 등록
 
 **BLOCK 예제: 겉보기엔 멀쩡한 XSS**
