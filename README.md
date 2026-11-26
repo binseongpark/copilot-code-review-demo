@@ -295,8 +295,6 @@ jobs:
 - 왜 마지막 줄? 모델은 앞에서부터 생성 → 판정을 먼저 쓰게 하면 **생각하기 전에 결론**
   - 실제 사례: 첫 줄 `BLOCK` → 설명하다가 "정정: PASS" → Gate는 첫 줄만 봐서 실패
 
-<!-- 📸 캡처: 첫 줄 BLOCK 후 "최종 판정: PASS"로 번복한 Gate 로그 -->
-
 - `ai-review`도 Required status checks에 등록
 
 **BLOCK 예제: 겉보기엔 멀쩡한 XSS**
@@ -329,6 +327,11 @@ http://localhost:5173/?name=<img src=x onerror="alert('XSS!')">
 - lint·test는 통과 → AI 게이트가 BLOCK
 - 수정: `<h1>안녕하세요, {name}님</h1>` (React가 자동 이스케이프)
 
+![](docs/images/2_3_3_01.png)
+![](docs/images/2_3_3_02.png)
+![](docs/images/2_3_3_03.png)
+![](docs/images/2_3_3_04.png)
+
 <!-- 📸 캡처: 브라우저에 alert('XSS!') 창이 뜬 화면 -->
 <!-- 📸 캡처: test ✅ / ai-review ❌ + 머지 차단 -->
 <!-- 📸 캡처: Actions 로그의 BLOCK 판정과 한국어 설명 -->
@@ -344,6 +347,10 @@ http://localhost:5173/?name=<img src=x onerror="alert('XSS!')">
   - **머지는 기본 해제(opt-in)** — 체크해야 머지까지 수행
   - 켜도 ruleset(required checks·승인 조건)은 **우회 못 함** → 게이트 통과해야 머지
 - 수정 커밋 → 자동 재리뷰 → CI 재실행 → 통과 시 머지
+
+![](docs/images/2_3_4_01.png)
+![](docs/images/2_3_4_02.png)
+![](docs/images/2_3_4_03.png)
 
 <!-- 📸 캡처: Fix with Copilot 버튼 -->
 <!-- 📸 캡처: Agent merge 옵션 창 (Ready to merge ▾ 드롭다운, Merge pull request 해제 상태) -->
