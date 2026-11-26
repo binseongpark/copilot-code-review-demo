@@ -79,6 +79,11 @@ describe("increment", () => {
    - **Fix with Copilot**: 에이전트가 수정 커밋
 3. 수정 후 **Re-request review**
 
+![](docs/images/2_2_2_01.png)
+![](docs/images/2_2_2_02.png)
+![](docs/images/2_2_2_03.png)
+![](docs/images/2_2_2_04.png)
+
 <!-- 📸 캡처: Reviewers에서 Copilot 선택 -->
 <!-- 📸 캡처: PR 개요 코멘트 (판정 + 요약) -->
 <!-- 📸 캡처: 인라인 코멘트 + Suggested change -->
