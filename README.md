@@ -74,8 +74,20 @@ describe("increment", () => {
 
 > 🌿 브랜치: `chore/text-change` (Ruleset 켠 뒤 새 PR)
 
-- `Settings → Rules → Rulesets` → ✅ **Automatically request Copilot code review**
-  - **Review new pushes**: 새 커밋마다 자동 재리뷰
+**Branch ruleset 만들기**
+
+1. 레포 `Settings → Rules → Rulesets` → **New ruleset** → **New branch ruleset**
+2. **Ruleset Name**: `main-protection` (자유)
+3. **Enforcement status**: `Disabled` → **`Active`** 로 변경
+4. **Target branches** → **Add target** → **Include default branch** (= `main`)
+5. **Branch rules**
+   - ✅ **Automatically request Copilot code review**
+     - ✅ **Review new pushes**: 새 커밋마다 자동 재리뷰
+     - ⬜ Review draft pull requests: Draft PR도 리뷰 (선택)
+   - 기본 체크된 **Restrict deletions / Block force pushes**는 그대로 둬도 됨
+     - 단, 강의 후 `git reset --hard baseline` + force push 하려면 **Block force pushes 해제** 필요
+6. 맨 아래 **Create** 클릭
+
 - PR을 만들면 Copilot이 리뷰어로 자동 지정
 - 자동 리뷰도 **PR 작성자 명의**로 실행 (비용도 작성자)
 - Free 플랜은 **Public 레포**에서만 Ruleset 사용 가능
